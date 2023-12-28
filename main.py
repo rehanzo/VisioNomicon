@@ -21,18 +21,19 @@ def main():
   new_filepaths: list[str] = generate_mapping(og_filepaths)
 
   # have new and old, put them together into a json and save
-  save_mapping(og_filepaths, new_filepaths)
+  save_mapping(args, new_filepaths)
 
-def save_mapping(og_filepaths: list[str], new_filepaths: list[str]):
+def save_mapping(args, new_filepaths: list[str]):
+  og_filepaths: list[str] = args.input_files
   data = dict(zip(og_filepaths, new_filepaths))
   # data ready to dump, need to get mapping filename
-  mapping_filename = get_mapping_name()
+  mapping_filename = get_mapping_name(args)
 
-  with open(DATA_DIR + mapping_filename, 'w') as file:
+  with open(mapping_filename, 'w') as file:
     json.dump(data, file, indent=4)
 
-def get_mapping_name() -> str:
-  return datetime.now().strftime("mapping-%Y-%m-%d-%H-%M-%S.json")
+def get_mapping_name(args) -> str:
+  return args.c if args.c is not None else DATA_DIR + datetime.now().strftime("mapping-%Y-%m-%d-%H-%M-%S.json")
   
 def generate_mapping(og_filepaths: list[str]) -> list[str]:
   new_filepaths: list[str] = copy.deepcopy(og_filepaths)

@@ -19,8 +19,8 @@ def main():
   args = parse_cli_args()
 
   # if creating mapping
-  if len(args.input_files) != 0:
-    og_filepaths = args.input_files
+  if len(args.f) != 0:
+    og_filepaths = args.f
     new_filepaths: list[str] = generate_mapping(og_filepaths)
 
     # have new and old, put them together into a json and save
@@ -58,7 +58,7 @@ def get_mapping_name(cli_fp: str):
     return mapping
 
 def save_mapping(args, new_filepaths: list[str]):
-  og_filepaths: list[str] = args.input_files
+  og_filepaths: list[str] = args.f
   data = dict(zip(og_filepaths, new_filepaths))
   # data ready to dump, need to get mapping filename
   mapping_filename = generate_mapping_name(args)

@@ -19,6 +19,7 @@ def image_to_name(image_path: str, structure: str) -> str:
   # Getting the base64 string
   base64_image = encode_image(image_path)
   _, image_ext = os.path.splitext(image_path)
+  image_ext = image_ext[1:] # remove leading period
 
   headers = {
     "Content-Type": "application/json",
@@ -38,8 +39,7 @@ def image_to_name(image_path: str, structure: str) -> str:
           {
             "type": "image_url",
             "image_url": {
-              # TODO: support more image types
-              "url": f"data:image/jpg;base64,{base64_image}"
+              "url": f"data:image/{image_ext};base64,{base64_image}"
             }
           }
         ]

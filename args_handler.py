@@ -49,11 +49,12 @@ def parse_cli_args():
     if args.s is None:
         parser.error('used -s with no value')
 
-    _, image_ext = os.path.splitext(image_path)
-    supported_ext = ['png', 'jpeg', 'jpg', 'webp', 'gif']
+    supported_ext = ['.png', '.jpeg', '.jpg', '.webp', '.gif']
 
-    if image_ext not in supported_ext:
-        parser.error('Filetype {} not supported'. format(image_ext))
+    for image_path in args.f:
+        _, image_ext = os.path.splitext(image_path)
+        if image_ext not in supported_ext:
+            parser.error('Filetype {} not supported'. format(image_ext))
 
     #
     # get absolute paths where we need them

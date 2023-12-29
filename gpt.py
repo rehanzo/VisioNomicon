@@ -1,8 +1,5 @@
 from openai import OpenAI
-import os
-import requests
-import base64
-import sys
+import os, requests, base64, sys
 
 API_KEY = ""
 
@@ -40,6 +37,7 @@ def image_to_name(image_path: str, structure: str) -> str:
           {
             "type": "image_url",
             "image_url": {
+              # TODO: support more image types
               "url": f"data:image/jpg;base64,{base64_image}"
             }
           }

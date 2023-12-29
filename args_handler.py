@@ -1,6 +1,4 @@
-import argparse
-import os
-import sys
+import argparse, os, sys
 
 # makes sure arg is alone, hard to read
 # used for -u
@@ -23,9 +21,10 @@ def parse_cli_args():
     parser.add_argument('-x', type=str, nargs='?', help='Execute on given mapping', const='')
     parser.add_argument('-ox', type=str, nargs='?', help='Map and execute on mapping', const='')
     parser.add_argument('-u', action=EnsureIsolatedAction, type=str, nargs='?', help='Undoes given mapping', const='')
+    parser.add_argument('-s', type=str, nargs='?', help='Structure to generate name from', default='[SubjectDescription]_[MainColor/ColorScheme]_[StyleOrFeel]_[CompositionElement].jpg')
 
     # if flag with value, equals value
-    # if flag with no value, equals default value
+    # if flag with no value, equals const value
     # if flag not used, equals None
     
     args = parser.parse_args()
@@ -46,6 +45,9 @@ def parse_cli_args():
         
     if ((args.o is None) != (args.f is None)): #XOR
         parser.error('-f and -o must be used together')
+
+    if args.s is None:
+        parser.error('used -s with no value')
 
     #
     # get absolute paths where we need them

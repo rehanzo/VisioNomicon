@@ -1,7 +1,4 @@
-import os
-import json
-import copy
-import glob
+import os, json, copy, glob
 from args_handler import *
 from gpt import *
 from datetime import datetime
@@ -20,8 +17,7 @@ def main():
 
   # if creating mapping
   if args.o is not None:
-    og_filepaths = args.f
-    new_filepaths: list[str] = generate_mapping(og_filepaths)
+    new_filepaths: list[str] = generate_mapping(args)
 
     # have new and old, put them together into a json and save
     save_mapping(args, new_filepaths)
@@ -73,24 +69,22 @@ def save_mapping(args, new_filepaths: list[str]):
 def generate_mapping_name(args) -> str:
   return args.o if args.o != '' else DATA_DIR + datetime.now().strftime("mapping-%Y-%m-%d-%H-%M-%S.json")
   
-def generate_mapping(og_filepaths: list[str]) -> list[str]:
+def generate_mapping(args) -> list[str]:
+  og_filepaths: list[str] = args.f
   new_filepaths: list[str] = copy.deepcopy(og_filepaths)
 
   for i in range(len(new_filepaths)):
     slicepoint = new_filepaths[i].rindex("/") + 1
     new_filepaths[i] = new_filepaths[i][:slicepoint]
 
-  # TODO: allow user to set structure
-  structure = "[SubjectDescription]_[MainColor/ColorScheme]_[StyleOrFeel]_[CompositionElement].jpg"
-
   for i in range(len(og_filepaths)):
     image_path = og_filepaths[i]
     # TODO: retries
     for j in range(3):
       print("Generating name...")
-      new_name = image_to_name(image_path, structure)
+      new_name = image_to_name(image_path, args.s)
       # TODO: Make validation optional
-      if name_validation(new_name, structure):
+      if name_validation(new_name, args.s):
         print("Generated name {} validated".format(new_name))
         break
       elif j == 2:

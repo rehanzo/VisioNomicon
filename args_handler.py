@@ -17,7 +17,7 @@ def parse_cli_args():
     # TODO: fix argparse usage message
     parser = argparse.ArgumentParser(description='Process some CLI arguments.')
     parser.add_argument('-f', type=str, nargs='*', help='The input file paths')
-    parser.add_argument('-o', type=str, nargs='?', help='Mapping file to create', const='')
+    parser.add_argument('-o', type=str, nargs='?', help='Mapping file to create')
     parser.add_argument('-x', type=str, nargs='?', help='Execute on given mapping', const='')
     parser.add_argument('-ox', type=str, nargs='?', help='Map and execute on mapping', const='')
     parser.add_argument('-u', action=EnsureIsolatedAction, type=str, nargs='?', help='Undoes given mapping', const='')
@@ -43,8 +43,8 @@ def parse_cli_args():
         args.x = args.ox
 
         
-    if ((args.o is None) != (args.f is None)): #XOR
-        parser.error('-f and -o must be used together')
+    if args.o is not None and args.f is None:
+        parser.error('-o must be used with -f')
 
     if args.s is None:
         parser.error('used -s with no value')

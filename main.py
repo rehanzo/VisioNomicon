@@ -16,7 +16,7 @@ def main():
   args = parse_cli_args()
 
   # if creating mapping
-  if args.o is not None:
+  if args.f is not None:
     new_filepaths: list[str] = generate_mapping(args)
 
     # have new and old, put them together into a json and save
@@ -70,7 +70,7 @@ def save_mapping(args, new_filepaths: list[str]):
     json.dump(data, file, indent=4)
 
 def generate_mapping_name(args) -> str:
-  return args.o if args.o != '' else DATA_DIR + datetime.now().strftime("mapping-%Y-%m-%d-%H-%M-%S.json")
+  return args.o if args.o is not None else DATA_DIR + datetime.now().strftime("mapping-%Y-%m-%d-%H-%M-%S.json")
   
 def generate_mapping(args) -> list[str]:
   og_filepaths: list[str] = args.f

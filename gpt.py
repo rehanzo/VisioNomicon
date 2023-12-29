@@ -18,6 +18,7 @@ def image_to_name(image_path: str, structure: str) -> str:
 
   # Getting the base64 string
   base64_image = encode_image(image_path)
+  _, image_ext = os.path.splitext(image_path)
 
   headers = {
     "Content-Type": "application/json",

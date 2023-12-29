@@ -11,6 +11,7 @@ def parse_cli_args():
     parser.add_argument('-o', type=str, nargs='?', help='Mapping file to create', const='')
     parser.add_argument('-x', type=str, nargs='?', help='Execute on given mapping', const='')
     parser.add_argument('-ox', type=str, nargs='?', help='Map and execute on mapping', const='')
+    parser.add_argument('-u', type=str, nargs='?', help='Undoes given mapping', const='')
 
     # if flag with value, equals value
     # if flag with no value, equals default value
@@ -46,5 +47,8 @@ def parse_cli_args():
 
     if args.x is not None and args.x != '':
         args.x = os.path.abspath(args.x)
+
+    if args.u is not None and args.u != '':
+        args.u = os.path.abspath(args.u)
     
     return args

@@ -43,6 +43,23 @@ def main():
       print("renaming {} to {}".format(og_filepaths[i], new_filepaths[i]))
       os.rename(og_filepaths[i], new_filepaths[i])
 
+  if args.u is not None:
+    mapping_fp = get_mapping_name(args.u)
+
+    og_filepaths: list[str] = []
+    new_filepaths: list[str] = []
+
+    with open(mapping_fp) as f:
+      data = json.load(f)
+      og_filepaths += list(data.keys())
+      new_filepaths += list(data.values())
+
+
+    for i in range(len(og_filepaths)):
+      print("renaming {} to {}".format(new_filepaths[i], og_filepaths[i]))
+      os.rename(new_filepaths[i], og_filepaths[i])
+    
+
 def get_mapping_name(cli_fp: str):
   if cli_fp != '':
     return cli_fp

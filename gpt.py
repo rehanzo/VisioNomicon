@@ -39,7 +39,8 @@ def image_to_name(image_path: str, structure: str) -> str:
           {
             "type": "image_url",
             "image_url": {
-              "url": f"data:image/{image_ext};base64,{base64_image}"
+              "url": f"data:image/{image_ext};base64,{base64_image}",
+              "detail": "low"
             }
           }
         ]

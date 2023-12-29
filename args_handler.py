@@ -4,8 +4,6 @@ import os
 def parse_cli_args():
     # TODO: Better help and description messages
     # TODO: fix argparse usage message
-    # TODO: -c should probably be -o, more clear
-        # which also means -cx should be -ox
     parser = argparse.ArgumentParser(description='Process some CLI arguments.')
     parser.add_argument('-f', type=str, nargs='*', help='The input file paths')
     parser.add_argument('-o', type=str, nargs='?', help='Mapping file to create', const='')
@@ -18,6 +16,14 @@ def parse_cli_args():
     # if flag not used, equals None
     
     args = parser.parse_args()
+
+    # HACK: errors if args.u isn't alone
+    # turns args list into dict, then pops u, then checks for nones
+    args_dict = vars(args).copy()
+    args_dict.pop('u')  # Remove the '-u' arg to check others
+
+    if args.u is not None and not all(x is None for x in args_dict.values()):
+        parser.error("use -u by itself")
 
     if args.f is not None and len(args.f) == 0:
         parser.error("-f requires a value")

@@ -4,7 +4,6 @@ import requests
 import base64
 import sys
 
-# TODO: validation of generated name - if not valid, regenerate
 API_KEY = ""
 
 def set_api_key():

@@ -26,9 +26,10 @@ def main():
     # have new and old, put them together into a json and save
     save_mapping(args, new_filepaths)
 
-  # if executing
-  if args.x is not None:
-    mapping_fp = get_mapping_name(args.x)
+  # if executing or undoing
+  if args.u is not None or args.x is not None:
+    arg = args.x if args.x is not None else args.u
+    mapping_fp = get_mapping_name(arg)
 
     og_filepaths: list[str] = []
     new_filepaths: list[str] = []
@@ -38,26 +39,12 @@ def main():
       og_filepaths += list(data.keys())
       new_filepaths += list(data.values())
 
-
-    for i in range(len(og_filepaths)):
-      print("renaming {} to {}".format(og_filepaths[i], new_filepaths[i]))
-      os.rename(og_filepaths[i], new_filepaths[i])
-
-  if args.u is not None:
-    mapping_fp = get_mapping_name(args.u)
-
-    og_filepaths: list[str] = []
-    new_filepaths: list[str] = []
-
-    with open(mapping_fp) as f:
-      data = json.load(f)
-      og_filepaths += list(data.keys())
-      new_filepaths += list(data.values())
-
-
-    for i in range(len(og_filepaths)):
-      print("renaming {} to {}".format(new_filepaths[i], og_filepaths[i]))
-      os.rename(new_filepaths[i], og_filepaths[i])
+    from_fps = og_filepaths if args.x is not None else new_filepaths
+    to_fps = new_filepaths if args.x is not None else og_filepaths
+      
+    for i in range(len(from_fps)):
+      print("renaming {} to {}".format(from_fps[i], to_fps[i]))
+      os.rename(from_fps[i], to_fps[i])
     
 
 def get_mapping_name(cli_fp: str):
@@ -98,8 +85,11 @@ def generate_mapping(og_filepaths: list[str]) -> list[str]:
 
   for i in range(len(og_filepaths)):
     image_path = og_filepaths[i]
+    # TODO: retries
     for j in range(3):
+      print("Generating name...")
       new_name = image_to_name(image_path, structure)
+      # TODO: Make validation optional
       if name_validation(new_name, structure):
         print("Generated name {} validated".format(new_name))
         break

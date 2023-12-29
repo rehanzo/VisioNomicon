@@ -1,5 +1,7 @@
 import argparse, os, sys
 
+NO_VAL = object()
+
 # makes sure arg is alone, hard to read
 # used for -u
 class EnsureIsolatedAction(argparse.Action):
@@ -18,9 +20,9 @@ def parse_cli_args():
     parser = argparse.ArgumentParser(description='Process some CLI arguments.')
     parser.add_argument('-f', type=str, nargs='*', help='The input file paths')
     parser.add_argument('-o', type=str, nargs='?', help='Mapping file to create')
-    parser.add_argument('-x', type=str, nargs='?', help='Execute on given mapping', const='')
-    parser.add_argument('-ox', type=str, nargs='?', help='Map and execute on mapping', const='')
-    parser.add_argument('-u', action=EnsureIsolatedAction, type=str, nargs='?', help='Undoes given mapping', const='')
+    parser.add_argument('-x', type=str, nargs='?', help='Execute on given mapping', const=NO_VAL)
+    parser.add_argument('-ox', type=str, nargs='?', help='Map and execute on mapping', const=NO_VAL)
+    parser.add_argument('-u', action=EnsureIsolatedAction, type=str, nargs='?', help='Undoes given mapping', const=NO_VAL)
     parser.add_argument('-s', type=str, nargs='?', help='Structure to generate name from', default='[SubjectDescription]_[MainColor/ColorScheme]_[StyleOrFeel]_[CompositionElement].jpg')
 
     # if flag with value, equals value
@@ -51,24 +53,26 @@ def parse_cli_args():
 
     supported_ext = ['.png', '.jpeg', '.jpg', '.webp', '.gif']
 
-    for image_path in args.f:
-        _, image_ext = os.path.splitext(image_path)
-        if image_ext not in supported_ext:
-            parser.error('Filetype {} not supported'. format(image_ext))
 
     #
     # get absolute paths where we need them
     #
+    # TODO: Ignore directories
     if args.f is not None:
         args.f = [os.path.abspath(path) for path in args.f]
 
-    if args.o is not None and args.o != '':
+        for image_path in args.f:
+            _, image_ext = os.path.splitext(image_path)
+            if image_ext not in supported_ext:
+                parser.error('Filetype {} not supported'.format(image_ext))
+
+    if args.o is not None and args.o != NO_VAL:
         args.o = os.path.abspath(args.o)
 
-    if args.x is not None and args.x != '':
+    if args.x is not None and args.x != NO_VAL:
         args.x = os.path.abspath(args.x)
 
-    if args.u is not None and args.u != '':
+    if args.u is not None and args.u != NO_VAL:
         args.u = os.path.abspath(args.u)
     
     return args

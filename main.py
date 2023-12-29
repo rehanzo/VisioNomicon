@@ -47,7 +47,7 @@ def main():
     
 
 def get_mapping_name(cli_fp: str):
-  if cli_fp != '':
+  if cli_fp != NO_VAL:
     return cli_fp
   else:
     # Join the directory with the file pattern
@@ -70,7 +70,7 @@ def save_mapping(args, new_filepaths: list[str]):
     json.dump(data, file, indent=4)
 
 def generate_mapping_name(args) -> str:
-  return args.o if args.o is not None else DATA_DIR + datetime.now().strftime("mapping-%Y-%m-%d-%H-%M-%S.json")
+  return args.o if args.o != NO_VAL else DATA_DIR + datetime.now().strftime("mapping-%Y-%m-%d-%H-%M-%S.json")
   
 def generate_mapping(args) -> list[str]:
   og_filepaths: list[str] = args.f

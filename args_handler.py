@@ -1,5 +1,18 @@
 import argparse
 import os
+import sys
+
+# makes sure arg is alone, hard to read
+# used for -u
+class EnsureIsolatedAction(argparse.Action):
+    def __init__(self, option_strings, dest, **kwargs):
+        super(EnsureIsolatedAction, self).__init__(option_strings, dest, **kwargs)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        if any(other_arg_present for arg_dest in parser._option_string_actions
+               for other_arg_present in sys.argv if arg_dest in other_arg_present and arg_dest != option_string):
+            parser.error(f"{option_string} must be used alone; no other arguments allowed")
+        setattr(namespace, self.dest, values)
 
 def parse_cli_args():
     # TODO: Better help and description messages
@@ -9,21 +22,13 @@ def parse_cli_args():
     parser.add_argument('-o', type=str, nargs='?', help='Mapping file to create', const='')
     parser.add_argument('-x', type=str, nargs='?', help='Execute on given mapping', const='')
     parser.add_argument('-ox', type=str, nargs='?', help='Map and execute on mapping', const='')
-    parser.add_argument('-u', type=str, nargs='?', help='Undoes given mapping', const='')
+    parser.add_argument('-u', action=EnsureIsolatedAction, type=str, nargs='?', help='Undoes given mapping', const='')
 
     # if flag with value, equals value
     # if flag with no value, equals default value
     # if flag not used, equals None
     
     args = parser.parse_args()
-
-    # HACK: errors if args.u isn't alone
-    # turns args list into dict, then pops u, then checks for nones
-    args_dict = vars(args).copy()
-    args_dict.pop('u')  # Remove the '-u' arg to check others
-
-    if args.u is not None and not all(x is None for x in args_dict.values()):
-        parser.error("use -u by itself")
 
     if args.f is not None and len(args.f) == 0:
         parser.error("-f requires a value")

@@ -67,14 +67,22 @@ def parse_cli_args():
     #
     # get absolute paths where we need them
     #
-    # TODO: Ignore directories
     if args.files is not None:
         args.files = [os.path.abspath(path) for path in args.files]
+        clean_paths = args.files.copy()
 
         for image_path in args.files:
+            if os.path.isdir(image_path):
+                print("{} is directory, skipping...".format(image_path))
+                clean_paths.remove(image_path)
+            elif not os.path.exists(image_path):
+                parser.error("{} doesn't exist".format(image_path))
+
+        for image_path in clean_paths:
             _, image_ext = os.path.splitext(image_path)
             if image_ext not in supported_ext:
                 parser.error('Filetype {} not supported'.format(image_ext))
+        args.files = clean_paths
 
     if args.output is not None and args.output != NO_VAL:
         args.output = os.path.abspath(args.output)

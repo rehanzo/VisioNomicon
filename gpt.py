@@ -1,4 +1,5 @@
 from openai import OpenAI
+from pathlib import Path
 import os, requests, base64, sys
 
 API_KEY = ""
@@ -51,7 +52,7 @@ def image_to_name(image_path: str, args) -> str:
     "max_tokens": 300
   }
 
-  for i in range(args.retries):
+  for i in range(args.error_retries):
     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
     response_json = response.json()
 
@@ -59,11 +60,11 @@ def image_to_name(image_path: str, args) -> str:
       return response_json['choices'][0]['message']['content']
     except:
       print("OpenAI Unexpected Response:", response_json['error']['message'])
-      i < args.retries - 1 and print("retrying...\n")
+      i < args.error_retries - 1 and print("retrying...\n")
 
   if args.skip_errors:
     return Path(image_path).stem
-  sys.exit("\nOpenAI unexpected response {} times, quitting.".format(args.retries))
+  sys.exit("\nOpenAI unexpected response {} times, quitting.".format(args.error_retries))
 
 def name_validation(name: str, structure: str):
   set_api_key()
@@ -72,7 +73,7 @@ def name_validation(name: str, structure: str):
   completion = client.chat.completions.create(
     model="gpt-4-1106-preview",
     messages=[
-      {"role": "system", "content": f"You are a data validator. You will be given a filename, and you need to ensure it precisely follows the structure '{structure}'. It should follow this structure exactly. If it does not, respond with 'NO'. If it does, respond with 'YES'"},
+      {"role": "system", "content": f"You are a data validator. You will be given a filename, and you need to ensure it precisely follows the structure '{structure}'. It should follow this structure exactly, but the content you can be more lenient with. If it does not, respond with 'NO'. If it does, respond with 'YES'"},
       {"role": "user", "content": f"{name}"}
     ]
   )

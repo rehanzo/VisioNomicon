@@ -80,13 +80,15 @@ def generate_mapping(args) -> list[str]:
 
   for i in range(len(og_filepaths)):
     image_path = og_filepaths[i]
-    for j in range(args.retries):
+    for j in range(args.validation_retries):
       print("Generating name...")
       new_name = image_to_name(image_path, args)
       print("Generated name {}".format(new_name))
+
       _, image_ext = os.path.splitext(image_path)
       new_filename = new_name + image_ext
       new_fp = new_filepaths[i] + new_filename
+
       # if new_fp == image_path, that means image_to_name errored past retry limit
       # mapping the file to the exact same name, keeping it the same
       # this means it would not follow the structure and fail validation, so we skip
@@ -95,23 +97,24 @@ def generate_mapping(args) -> list[str]:
       elif name_validation(new_name, args.structure):
         print("Name validated".format(new_name))
         break
-      elif j == args.retries - 1:
-        sys.exit("Failed validation {} times, aborting...".format(args.retries))
+      elif j == args.validation_retries - 1:
+        if not args.skip_validation:
+          sys.exit("Failed validation {} times, aborting...".format(args.validation_retries))
+        break
+      else:
+        print("Generated name failed validation, regenerating...")
 
-      print("Generated name failed validation, regenerating...")
-
-    _, image_ext = os.path.splitext(image_path)
-    new_name = new_name + image_ext
-    new_fp = new_filepaths[i] + new_name
-    new_name_suffixed = new_name
+    new_filename_suffixed = new_filename
     num_suffix = 1
     while new_fp in new_filepaths:
-    new_filename_suffixed = new_filename
-    new_filepaths[i] = new_fp
-
       new_filename_suffixed = new_filename + f"_{num_suffix}"
       new_fp = new_filepaths[i] + new_filename_suffixed
+      num_suffix += 1
+
+    new_filepaths[i] = new_fp
+
+    print("File {} mapped to name {}\n".format(og_filepaths[i], new_filename_suffixed))
+  return new_filepaths
 
 if __name__ == "__main__":
     main()
-    print("File {} mapped to name {}\n".format(og_filepaths[i], new_filename_suffixed))

@@ -36,7 +36,7 @@ def image_to_name(image_path: str, args) -> str:
         "content": [
           {
             "type": "text",
-            "text": f"Give this image a filename, precisely following the form '{structure}'. Respond with the full filename, nothing else."
+            "text": f"Give this image a filename, precisely following the form '{structure}'. Respond with the filename without the filetype extension, nothing else."
           },
           {
             "type": "image_url",
@@ -55,7 +55,6 @@ def image_to_name(image_path: str, args) -> str:
     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
     response_json = response.json()
 
-    # TODO: flag to skip errors, mapping the filename to original name, changing nothing
     try:
       return response_json['choices'][0]['message']['content']
     except:
@@ -63,7 +62,7 @@ def image_to_name(image_path: str, args) -> str:
       i < args.retries - 1 and print("retrying...\n")
 
   if args.skip_errors:
-    return image_path
+    return Path(image_path).stem
   sys.exit("\nOpenAI unexpected response {} times, quitting.".format(args.retries))
 
 def name_validation(name: str, structure: str):

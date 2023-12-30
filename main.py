@@ -84,7 +84,13 @@ def generate_mapping(args) -> list[str]:
       print("Generating name...")
       new_name = image_to_name(image_path, args)
       print("Generated name {}".format(new_name))
-      if args.skip_validation:
+      _, image_ext = os.path.splitext(image_path)
+      new_filename = new_name + image_ext
+      new_fp = new_filepaths[i] + new_filename
+      # if new_fp == image_path, that means image_to_name errored past retry limit
+      # mapping the file to the exact same name, keeping it the same
+      # this means it would not follow the structure and fail validation, so we skip
+      if new_fp == image_path:
         break
       elif name_validation(new_name, args.structure):
         print("Name validated".format(new_name))
@@ -100,14 +106,12 @@ def generate_mapping(args) -> list[str]:
     new_name_suffixed = new_name
     num_suffix = 1
     while new_fp in new_filepaths:
-      new_name_suffixed = new_name + f"_{num_suffix}"
-      new_fp = new_filepaths[i] + new_name_suffixed
-      num_suffix += 1
-
+    new_filename_suffixed = new_filename
     new_filepaths[i] = new_fp
 
-    print("File {} mapped to name {}\n".format(og_filepaths[i], new_name_suffixed))
-  return new_filepaths
+      new_filename_suffixed = new_filename + f"_{num_suffix}"
+      new_fp = new_filepaths[i] + new_filename_suffixed
 
 if __name__ == "__main__":
     main()
+    print("File {} mapped to name {}\n".format(og_filepaths[i], new_filename_suffixed))

@@ -39,10 +39,8 @@ def main():
     to_fps = new_filepaths if args.execute is not None else og_filepaths
       
     for i in range(len(from_fps)):
-      # TODO/NOTE: probably better to have first be full path, next be name of file
-      # since being in the same directory is implied. Makes it easier to read
-      # can use `head, tail = os.path.split()`, tail being the end name
-      print("renaming {} to {}".format(from_fps[i], to_fps[i]))
+      _, filename = os.path.split(to_fps[i])
+      print("Renaming {} to {}".format(from_fps[i], '.../' + filename))
       os.rename(from_fps[i], to_fps[i])
     
 

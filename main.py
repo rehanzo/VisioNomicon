@@ -92,9 +92,19 @@ def generate_mapping(args) -> list[str]:
 
       print("Generated name failed validation, regenerating...")
 
-    new_filepaths[i] = new_filepaths[i] + new_name
+    _, image_ext = os.path.splitext(image_path)
+    new_name = new_name + image_ext
+    new_fp = new_filepaths[i] + new_name
+    new_name_suffixed = new_name
+    num_suffix = 1
+    while new_fp in new_filepaths:
+      new_name_suffixed = new_name + f"_{num_suffix}"
+      new_fp = new_filepaths[i] + new_name_suffixed
+      num_suffix += 1
 
-    print("File {} mapped to name {}\n".format(og_filepaths[i], new_name))
+    new_filepaths[i] = new_fp
+
+    print("File {} mapped to name {}\n".format(og_filepaths[i], new_name_suffixed))
   return new_filepaths
 
 if __name__ == "__main__":

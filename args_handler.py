@@ -2,18 +2,6 @@ import argparse, os, sys
 
 NO_VAL = object()
 
-# makes sure arg is alone, hard to read
-# used for -u
-class EnsureIsolatedAction(argparse.Action):
-    def __init__(self, option_strings, dest, **kwargs):
-        super(EnsureIsolatedAction, self).__init__(option_strings, dest, **kwargs)
-
-    def __call__(self, parser, namespace, values, option_string=None):
-        if any(other_arg_present for arg_dest in parser._option_string_actions
-               for other_arg_present in sys.argv if arg_dest in other_arg_present and arg_dest != option_string):
-            parser.error(f"{option_string} must be used alone; no other arguments allowed")
-        setattr(namespace, self.dest, values)
-
 def parse_cli_args():
     # TODO: Better help and description messages
     # TODO: fix argparse usage message
@@ -22,15 +10,38 @@ def parse_cli_args():
     parser.add_argument('-o', type=str, nargs='?', help='Mapping file to create')
     parser.add_argument('-x', type=str, nargs='?', help='Execute on given mapping', const=NO_VAL)
     parser.add_argument('-ox', type=str, nargs='?', help='Map and execute on mapping', const=NO_VAL)
-    parser.add_argument('-u', action=EnsureIsolatedAction, type=str, nargs='?', help='Undoes given mapping', const=NO_VAL)
+    parser.add_argument('-u', type=str, nargs='?', help='Undoes given mapping', const=NO_VAL)
     parser.add_argument('-s', type=str, nargs='?', help='Structure to generate name from', default='[SubjectDescription]_[MainColor/ColorScheme]_[StyleOrFeel]_[CompositionElement].jpg')
 
     # if flag with value, equals value
     # if flag with no value, equals const value
     # if flag not used, equals None
+
+
+    # capture initial defaults before parsing
+    # this is for the below 'hack'
+    defaults = {action.dest: action.default for action in parser._actions}
     
     args = parser.parse_args()
+    args_dict = vars(args)
 
+    ####################################################################################
+    ### NOTE: this section is here to make sure if -u is used, its by itself
+    ###       It is a bit hacky and hard to understand, but it seems there is
+    ###       no way to do this thats not hacky or unclear
+    if args.u is not None:
+        # Check if any other arg changed from default
+        non_default_args = [arg for arg in args_dict if args_dict[arg] != defaults[arg]]
+    
+        # Remove checked key since we don't need to check it against itself
+        non_default_args.remove('u')
+    
+        # If any other arguments changed, error
+        if non_default_args:
+            parser.error('-u must not be used with any other arguments.')
+    ####################################################################################
+
+    parser.error("STOP")
     if args.f is not None and len(args.f) == 0:
         parser.error("-f requires a value")
 

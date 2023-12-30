@@ -83,12 +83,14 @@ def generate_mapping(args) -> list[str]:
     for j in range(args.retries):
       print("Generating name...")
       new_name = image_to_name(image_path, args)
-      # TODO: Make validation optional
-      if name_validation(new_name, args.structure):
-        print("Generated name {} validated".format(new_name))
+      print("Generated name {}".format(new_name))
+      if args.skip_validation:
         break
-      elif j == arg.retries - 1:
-        sys.exit("Generated name {} failed validation {} times, aborting...".format(new_name, args.retries))
+      elif name_validation(new_name, args.structure):
+        print("Name validated".format(new_name))
+        break
+      elif j == args.retries - 1:
+        sys.exit("Failed validation {} times, aborting...".format(args.retries))
 
       print("Generated name failed validation, regenerating...")
 

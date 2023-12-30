@@ -62,6 +62,8 @@ def image_to_name(image_path: str, args) -> str:
       print("OpenAI Unexpected Response:", response_json['error']['message'])
       i < args.retries - 1 and print("retrying...\n")
 
+  if args.skip_errors:
+    return image_path
   sys.exit("\nOpenAI unexpected response {} times, quitting.".format(args.retries))
 
 def name_validation(name: str, structure: str):

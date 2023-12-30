@@ -8,7 +8,9 @@ def set_api_key():
   not "OPENAI_API_KEY" in os.environ and sys.exit("Open AI API key not set. Set it using the OPENAI_API_KEY environment variable") 
   API_KEY = os.environ.get("OPENAI_API_KEY") if API_KEY == "" else API_KEY
     
-def image_to_name(image_path: str, structure: str) -> str:
+def image_to_name(image_path: str, args) -> str:
+  structure: str = args.structure
+
   set_api_key()
   # Function to encode the image
   def encode_image(image_path: str):
@@ -49,9 +51,7 @@ def image_to_name(image_path: str, structure: str) -> str:
     "max_tokens": 300
   }
 
-  # TODO: let user modify number of retries
-  retries = 3
-  for i in range(retries):
+  for i in range(args.retries):
     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
     response_json = response.json()
 
@@ -60,9 +60,9 @@ def image_to_name(image_path: str, structure: str) -> str:
       return response_json['choices'][0]['message']['content']
     except:
       print("OpenAI Unexpected Response:", response_json['error']['message'])
-      i < retries - 1 and print("retrying...\n")
+      i < args.retries - 1 and print("retrying...\n")
 
-  sys.exit("\nOpenAI unexpected response {} times, quitting.".format(retries))
+  sys.exit("\nOpenAI unexpected response {} times, quitting.".format(args.retries))
 
 def name_validation(name: str, structure: str):
   set_api_key()

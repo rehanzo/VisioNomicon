@@ -12,6 +12,7 @@ def parse_cli_args():
     parser.add_argument('-ox', '--mapex', type=str, nargs='?', help='Map and execute on mapping', const=NO_VAL)
     parser.add_argument('-u', '--undo', type=str, nargs='?', help='Undoes given mapping', const=NO_VAL)
     parser.add_argument('-s', '--structure', type=str, nargs='?', help='Structure to generate name from', default='[SubjectDescription]_[MainColor/ColorScheme]_[StyleOrFeel]_[CompositionElement].jpg')
+    parser.add_argument('-r', '--retries', type=int, help='Set number of validation and error retries')
 
     # if flag with value, equals value
     # if flag with no value, equals const value

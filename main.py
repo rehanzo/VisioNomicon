@@ -80,22 +80,20 @@ def generate_mapping(args) -> list[str]:
 
   for i in range(len(og_filepaths)):
     image_path = og_filepaths[i]
-    # TODO: retries
-    for j in range(3):
+    for j in range(args.retries):
       print("Generating name...")
-      new_name = image_to_name(image_path, args.structure)
+      new_name = image_to_name(image_path, args)
       # TODO: Make validation optional
       if name_validation(new_name, args.structure):
         print("Generated name {} validated".format(new_name))
         break
-      elif j == 2:
-        sys.exit("Generated name {} failed validation three times, aborting...".format(new_name))
+      elif j == arg.retries - 1:
+        sys.exit("Generated name {} failed validation {} times, aborting...".format(new_name, args.retries))
 
       print("Generated name failed validation, regenerating...")
 
     new_filepaths[i] = new_filepaths[i] + new_name
 
-    # TODO: better message
     print("File {} mapped to name {}\n".format(og_filepaths[i], new_name))
   return new_filepaths
 

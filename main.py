@@ -16,15 +16,15 @@ def main():
   args = parse_cli_args()
 
   # if creating mapping
-  if args.f is not None:
+  if args.files is not None:
     new_filepaths: list[str] = generate_mapping(args)
 
     # have new and old, put them together into a json and save
     save_mapping(args, new_filepaths)
 
   # if executing or undoing
-  if args.u is not None or args.x is not None:
-    arg = args.x if args.x is not None else args.u
+  if args.undo is not None or args.execute is not None:
+    arg = args.execute if args.execute is not None else args.undo
     mapping_fp = get_mapping_name(arg)
 
     og_filepaths: list[str] = []
@@ -35,8 +35,8 @@ def main():
       og_filepaths += list(data.keys())
       new_filepaths += list(data.values())
 
-    from_fps = og_filepaths if args.x is not None else new_filepaths
-    to_fps = new_filepaths if args.x is not None else og_filepaths
+    from_fps = og_filepaths if args.execute is not None else new_filepaths
+    to_fps = new_filepaths if args.execute is not None else og_filepaths
       
     for i in range(len(from_fps)):
       # TODO/NOTE: probably better to have first be full path, next be name of file
@@ -61,7 +61,7 @@ def get_mapping_name(cli_fp: str):
     return mapping
 
 def save_mapping(args, new_filepaths: list[str]):
-  og_filepaths: list[str] = args.f
+  og_filepaths: list[str] = args.files
   data = dict(zip(og_filepaths, new_filepaths))
   # data ready to dump, need to get mapping filename
   mapping_filename = generate_mapping_name(args)
@@ -70,10 +70,10 @@ def save_mapping(args, new_filepaths: list[str]):
     json.dump(data, file, indent=4)
 
 def generate_mapping_name(args) -> str:
-  return args.o if args.o != NO_VAL else DATA_DIR + datetime.now().strftime("mapping-%Y-%m-%d-%H-%M-%S.json")
+  return args.output if args.output else DATA_DIR + datetime.now().strftime("mapping-%Y-%m-%d-%H-%M-%S.json")
   
 def generate_mapping(args) -> list[str]:
-  og_filepaths: list[str] = args.f
+  og_filepaths: list[str] = args.files
   new_filepaths: list[str] = copy.deepcopy(og_filepaths)
 
   for i in range(len(new_filepaths)):
@@ -85,9 +85,9 @@ def generate_mapping(args) -> list[str]:
     # TODO: retries
     for j in range(3):
       print("Generating name...")
-      new_name = image_to_name(image_path, args.s)
+      new_name = image_to_name(image_path, args.structure)
       # TODO: Make validation optional
-      if name_validation(new_name, args.s):
+      if name_validation(new_name, args.structure):
         print("Generated name {} validated".format(new_name))
         break
       elif j == 2:

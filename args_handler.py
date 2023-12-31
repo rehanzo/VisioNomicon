@@ -3,19 +3,17 @@ import argparse, os, sys
 NO_VAL = object()
 
 def parse_cli_args():
-    # TODO: Better help and description messages
-    # TODO: fix argparse usage message
-    parser = argparse.ArgumentParser(description='Process some CLI arguments.')
-    parser.add_argument('-f', '--files', type=str, nargs='*', help='The input file paths')
-    parser.add_argument('-o', '--output', type=str, nargs='?', help='Mapping file to create')
+    parser = argparse.ArgumentParser(description='A utility leveraging GPT-4V for image file renaming based on content.')
+    parser.add_argument('-f', '--files', type=str, nargs='*', help='Specify file paths of the images to create mapping for')
+    parser.add_argument('-o', '--output', type=str, nargs='?', help='Provide file path for the JSON mapping file')
     parser.add_argument('-x', '--execute', type=str, nargs='?', help='Execute on given mapping', const=NO_VAL)
-    parser.add_argument('-ox', '--mapex', type=str, nargs='?', help='Map and execute on mapping', const=NO_VAL)
-    parser.add_argument('-u', '--undo', type=str, nargs='?', help='Undoes given mapping', const=NO_VAL)
-    parser.add_argument('-s', '--structure', type=str, nargs='?', help='Structure to generate name from', default='[SubjectDescription]_[MainColor/ColorScheme]_[StyleOrFeel]_[CompositionElement]')
-    parser.add_argument('-e', '--validation-retries', type=int, help='Number of validation retries', default=3)
-    parser.add_argument('-v', '--error-retries', type=int, help='Number of error retries before', default=3)
-    parser.add_argument('-E', '--ignore-validation-fail', action='store_true', help='If validation retries limit is reached, map file to original name and proceed with the next file')
-    parser.add_argument('-V', '--ignore-error-fail', action='store_true', help='If error retries limit is reached, map file to original name and proceed with the next file')
+    parser.add_argument('-ox', '--mapex', type=str, nargs='?', help='Map and execute on mapping at given location', const=NO_VAL)
+    parser.add_argument('-u', '--undo', type=str, nargs='?', help='Undo given mapping', const=NO_VAL)
+    parser.add_argument('-s', '--structure', type=str, nargs='?', help='Define the template for renaming image files, without file extension', default='[SubjectDescription]_[MainColor/ColorScheme]_[StyleOrFeel]_[CompositionElement]')
+    parser.add_argument('-e', '--validation-retries', type=int, help='Number of times to retry if validation not passed', default=3)
+    parser.add_argument('-v', '--error-retries', type=int, help='Number of times to retry if error response recieved from OpenAI', default=3)
+    parser.add_argument('-E', '--ignore-validation-fail', action='store_true', help='If validation retries limit is reached, map file to original name instead of returning an error')
+    parser.add_argument('-V', '--ignore-error-fail', action='store_true', help='If error retries limit is reached, map file to original name instead of returning an error')
 
     # if flag with value, equals value
     # if flag with no value, equals const value

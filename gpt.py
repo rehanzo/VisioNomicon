@@ -10,7 +10,7 @@ def set_api_key():
   API_KEY = os.environ.get("OPENAI_API_KEY") if API_KEY == "" else API_KEY
     
 def image_to_name(image_path: str, args) -> str:
-  structure: str = args.structure
+  template: str = args.template
 
   set_api_key()
   # Function to encode the image
@@ -37,7 +37,7 @@ def image_to_name(image_path: str, args) -> str:
         "content": [
           {
             "type": "text",
-            "text": f"Give this image a filename, precisely following the form '{structure}'. Respond with the filename without the filetype extension, nothing else."
+            "text": f"Give this image a filename, precisely following the form '{template}'. Respond with the filename without the filetype extension, nothing else."
           },
           {
             "type": "image_url",
@@ -66,14 +66,14 @@ def image_to_name(image_path: str, args) -> str:
     return Path(image_path).stem
   sys.exit("\nOpenAI unexpected response {} time(s), quitting.".format(args.error_retries + 1))
 
-def name_validation(name: str, structure: str):
+def name_validation(name: str, template: str):
   set_api_key()
   client = OpenAI()
 
   completion = client.chat.completions.create(
     model="gpt-4-1106-preview",
     messages=[
-      {"role": "system", "content": f"You are a data validator. You will be given a filename, and you need to ensure it precisely follows the structure '{structure}'. It should follow this structure exactly, but the content you can be more lenient with. If it does not, respond with 'NO'. If it does, respond with 'YES'"},
+      {"role": "system", "content": f"You are a data validator. You will be given a filename, and you need to ensure it precisely follows the template '{template}'. It should follow this template exactly, but the content you can be more lenient with. If it does not, respond with 'NO'. If it does, respond with 'YES'"},
       {"role": "user", "content": f"{name}"}
     ]
   )

@@ -9,7 +9,7 @@ def parse_cli_args():
     parser.add_argument('-x', '--execute', type=str, nargs='?', help='Execute on given mapping', const=NO_VAL)
     parser.add_argument('-ox', '--mapex', type=str, nargs='?', help='Map and execute on mapping at given location', const=NO_VAL)
     parser.add_argument('-u', '--undo', type=str, nargs='?', help='Undo given mapping', const=NO_VAL)
-    parser.add_argument('-s', '--structure', type=str, nargs='?', help='Define the template for renaming image files, without file extension', default='[SubjectDescription]_[MainColor/ColorScheme]_[StyleOrFeel]_[CompositionElement]')
+    parser.add_argument('-t', '--template', type=str, nargs='?', help='Define the template for renaming image files, without file extension', default='[SubjectDescription]_[MainColor/ColorScheme]_[StyleOrFeel]_[CompositionElement]')
     parser.add_argument('-e', '--validation-retries', type=int, help='Number of times to retry if validation not passed', default=3)
     parser.add_argument('-v', '--error-retries', type=int, help='Number of times to retry if error response recieved from OpenAI', default=3)
     parser.add_argument('-E', '--ignore-validation-fail', action='store_true', help='If validation retries limit is reached, map file to original name instead of returning an error')
@@ -60,8 +60,8 @@ def parse_cli_args():
     if args.output is not None and args.files is None:
         parser.error('-o/--output must be used with -f/--files')
 
-    if args.structure is None:
-        parser.error('used -s/--structure with no value')
+    if args.template is None:
+        parser.error('used -t/--template with no value')
 
     supported_ext = ['.png', '.jpeg', '.jpg', '.webp', '.gif']
 

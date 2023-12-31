@@ -91,10 +91,10 @@ def generate_mapping(args) -> list[str]:
 
       # if new_fp == image_path, that means image_to_name errored past retry limit
       # mapping the file to the exact same name, keeping it the same
-      # this means it would not follow the structure and fail validation, so we skip
+      # this means it would not follow the template and fail validation, so we skip
       if new_fp == image_path:
         break
-      elif name_validation(new_name, args.structure):
+      elif name_validation(new_name, args.template):
         print("Name validated".format(new_name))
         break
       elif j == args.validation_retries:

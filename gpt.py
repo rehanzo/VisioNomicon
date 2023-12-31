@@ -52,7 +52,7 @@ def image_to_name(image_path: str, args) -> str:
     "max_tokens": 300
   }
 
-  for i in range(args.error_retries):
+  for i in range(args.error_retries + 1):
     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
     response_json = response.json()
 
@@ -60,11 +60,11 @@ def image_to_name(image_path: str, args) -> str:
       return response_json['choices'][0]['message']['content']
     except:
       print("OpenAI Unexpected Response:", response_json['error']['message'])
-      i < args.error_retries - 1 and print("retrying...\n")
+      i < args.error_retries and print("retrying...\n")
 
-  if args.skip_errors:
+  if args.ignore_error_fail:
     return Path(image_path).stem
-  sys.exit("\nOpenAI unexpected response {} times, quitting.".format(args.error_retries))
+  sys.exit("\nOpenAI unexpected response {} time(s), quitting.".format(args.error_retries + 1))
 
 def name_validation(name: str, structure: str):
   set_api_key()

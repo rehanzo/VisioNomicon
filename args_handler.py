@@ -12,10 +12,10 @@ def parse_cli_args():
     parser.add_argument('-ox', '--mapex', type=str, nargs='?', help='Map and execute on mapping', const=NO_VAL)
     parser.add_argument('-u', '--undo', type=str, nargs='?', help='Undoes given mapping', const=NO_VAL)
     parser.add_argument('-s', '--structure', type=str, nargs='?', help='Structure to generate name from', default='[SubjectDescription]_[MainColor/ColorScheme]_[StyleOrFeel]_[CompositionElement]')
-    parser.add_argument('-r', '--validation-retries', type=int, help='Set number of validation retries', default=3)
-    parser.add_argument('-R', '--error-retries', type=int, help='Set number of error retries', default=3)
-    parser.add_argument('-K', '--skip-errors', action='store_true', help='Skip errors')
-    parser.add_argument('-k', '--skip-validation', action='store_true', help='Skip errors')
+    parser.add_argument('-e', '--validation-retries', type=int, help='Number of validation retries', default=3)
+    parser.add_argument('-v', '--error-retries', type=int, help='Number of error retries before', default=3)
+    parser.add_argument('-E', '--ignore-validation-fail', action='store_true', help='If validation retries limit is reached, map file to original name and proceed with the next file')
+    parser.add_argument('-V', '--ignore-error-fail', action='store_true', help='If error retries limit is reached, map file to original name and proceed with the next file')
 
     # if flag with value, equals value
     # if flag with no value, equals const value

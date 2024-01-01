@@ -16,7 +16,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'visionomicon=visionomicon:main',
+            'VisioNomicon=VisioNomicon.main:main',
         ],
     },
     python_requires='>=3.6',

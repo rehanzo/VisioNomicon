@@ -1,6 +1,6 @@
 import os, json, copy, glob
-from args_handler import *
-from gpt import *
+from .args_handler import *
+from .gpt import *
 from datetime import datetime
 
 DATA_DIR = ""

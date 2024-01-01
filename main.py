@@ -49,7 +49,7 @@ def get_mapping_name(cli_fp: str):
     return cli_fp
   else:
     # Join the directory with the file pattern
-    file_pattern = os.path.join(DATA_DIR, 'mapping-*.json')
+    file_pattern = os.path.join(DATA_DIR, '*.json')
 
     # Get list of files matching the file pattern
     files = glob.glob(file_pattern)

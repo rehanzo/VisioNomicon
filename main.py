@@ -109,7 +109,7 @@ def generate_mapping(args) -> list[str]:
     new_filename_suffixed = new_filename
     num_suffix = 1
     while new_fp in new_filepaths:
-      new_filename_suffixed = new_filename + f"_{num_suffix}"
+      new_filename_suffixed = new_name + f"_{num_suffix}" + image_ext
       new_fp = new_filepaths[i] + new_filename_suffixed
       num_suffix += 1
 

@@ -37,7 +37,7 @@ def image_to_name(image_path: str, args) -> str:
         "content": [
           {
             "type": "text",
-            "text": f"Give this image a filename, precisely following the form '{template}'. Respond with the filename without the filetype extension, nothing else."
+            "text": f"Generate a filename for an image by analyzing its content and utilizing a user-provided template. Placeholders enclosed in square brackets (e.g., [Subject], [Color], [Action]) will be used, which represent specific elements to be incorporated in the filename. Replace the placeholders accurately and succinctly with terms pulled from the image content, removing the brackets in the final filename. For instance, if the template reads '[MainSubject]_in_[Setting]', the filename might be 'Cat_in_Garden'. Construct the filename omitting the file extension and any other text. Assure that every placeholder is filled with precise, image-derived information, conforming to typical filename length restrictions. The given template is '{template}'."
           },
           {
             "type": "image_url",
@@ -73,9 +73,9 @@ def name_validation(name: str, template: str):
   completion = client.chat.completions.create(
     model="gpt-4-1106-preview",
     messages=[
-      {"role": "system", "content": f"You are a data validator. You will be given a filename, and you need to ensure it precisely follows the template '{template}'. It should follow this template exactly, but the content you can be more lenient with. If it does not, respond with 'NO'. If it does, respond with 'YES'"},
+      {"role": "system", "content": f"Act as a validator to ensure that a generated filename complies with the specified template structure '{template}'. Without access to the corresponding image, assess whether the filename reflects what could plausibly stem from the image contents based on the components stipulated in the template. For example, if the template is '[MainSubject]', filenames like 'Puppy' or 'Sunflower' could be valid, assuming the primary subject in the image aligns with these nouns. Evaluate if the filename is succinct, follows the intended format, and seems plausible as a descriptor for an unseen image. Reply with 'VALID' if the filename correctly adheres to the template and represents a feasible image content descriptor or 'INVALID' if it fails to meet these conditions. Provide only the validation outcome as your response."},
       {"role": "user", "content": f"{name}"}
     ]
   )
 
-  return completion.choices[0].message.content == "YES"
+  return completion.choices[0].message.content == "VALID"

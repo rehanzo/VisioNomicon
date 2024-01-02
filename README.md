@@ -20,15 +20,15 @@ VisioNomicon is a powerful Python-based command-line utility tool designed to re
 
 ## Installation
 
-You can install the package directly from the source. To do so, run the following command:
+You can install the package using pip via the following command:
 
 ```bash
-pip install git+https://github.com/rehanzo/VisioNomicon.git@v0.1.0#egg=VisioNomicon
+pip install VisioNomicon
 ```
 
 Alternatively, you can manually install the package by downloading the source distribution and running the following commands:
 
-1. Download the latest source distribution (`VisioNomicon-0.1.0.tar.gz`) from the [Releases](https://github.com/rehanzo/VisioNomicon/releases) page.
+1. Download the latest source distribution (`VisioNomicon-0.1.1.tar.gz`) from the [Releases](https://github.com/rehanzo/VisioNomicon/releases) page.
 2. Extract the file and navigate to the extracted directory.
 3. Run the following command to install:
 

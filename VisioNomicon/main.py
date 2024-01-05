@@ -68,7 +68,7 @@ def save_mapping(args, new_filepaths: list[str]):
     json.dump(data, file, indent=4)
 
 def generate_mapping_name(args) -> str:
-  return args.output if args.output else DATA_DIR + datetime.now().strftime("mapping-%Y-%m-%d-%H-%M-%S.json")
+  return args.output if args.output != NO_VAL else DATA_DIR + datetime.now().strftime("mapping-%Y-%m-%d-%H-%M-%S.json")
   
 def generate_mapping(args) -> list[str]:
   og_filepaths: list[str] = args.files

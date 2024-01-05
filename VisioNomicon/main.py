@@ -23,26 +23,26 @@ def main():
     save_mapping(args, new_filepaths)
 
   # if executing or undoing
-  if args.undo is not None or args.execute is not None:
-    arg = args.execute if args.execute is not None else args.undo
-    mapping_fp = get_mapping_name(arg)
+  if args.undo or args.execute:
+    rel_mapping_fp = args.execute if args.execute else args.undo
+    rename_from_mapping(rel_mapping_fp, args.undo is not None)
 
-    og_filepaths: list[str] = []
-    new_filepaths: list[str] = []
+def rename_from_mapping(rel_mapping_fp: str, undo: bool = False):
+  mapping_fp = get_mapping_name(rel_mapping_fp)
+  og_filepaths: list[str] = []
+  new_filepaths: list[str] = []
 
-    with open(mapping_fp) as f:
-      data = json.load(f)
-      og_filepaths += list(data.keys())
-      new_filepaths += list(data.values())
+  with open(mapping_fp) as f:
+    data = json.load(f)
+    og_filepaths += list(data.keys())
+    new_filepaths += list(data.values())
 
-    from_fps = og_filepaths if args.execute is not None else new_filepaths
-    to_fps = new_filepaths if args.execute is not None else og_filepaths
-      
-    for i in range(len(from_fps)):
-      _, filename = os.path.split(to_fps[i])
-      print("Renaming {} to {}".format(from_fps[i], '.../' + filename))
-      os.rename(from_fps[i], to_fps[i])
-    
+  from_fps, to_fps = (new_filepaths, og_filepaths) if undo else (og_filepaths, new_filepaths)
+  
+  for i in range(len(from_fps)):
+    _, filename = os.path.split(to_fps[i])
+    print("Renaming {} to {}".format(from_fps[i], '.../' + filename))
+    os.rename(from_fps[i], to_fps[i])
 
 def get_mapping_name(cli_fp: str):
   if cli_fp != NO_VAL:

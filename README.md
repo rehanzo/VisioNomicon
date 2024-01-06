@@ -1,6 +1,6 @@
 # VisioNomicon
 
-VisioNomicon is a powerful Python-based command-line utility tool designed to rename image files using the capabilities of GPT-4. The application generates descriptive filenames based on a user given template.
+VisioNomicon is a powerful Python-based command-line utility tool designed to rename image files using the capabilities of GPT-4. Descriptive filenames are generated based on a user given template and the content of the image.
 
 ![demo][DEMO]
 

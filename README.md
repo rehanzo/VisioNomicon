@@ -2,6 +2,8 @@
 
 VisioNomicon is a powerful Python-based command-line utility tool designed to rename image files using the capabilities of GPT-4. The application generates descriptive filenames based on a user given template.
 
+![demo][DEMO]
+
 ## Features
 
 - Rename image files based on generated filenames from GPT-4V
@@ -112,3 +114,5 @@ This project is open-sourced under the [GLP-3.0 License](LICENSE).
 ## Disclaimer
 
 This tool is not affiliated with OpenAI. The functionality is subject to change based on updates to the API or the terms of service provided by OpenAI.
+
+[DEMO]: https://raw.githubusercontent.com/rehanzo/VisioNomicon/master/assets/demonstration.gif 

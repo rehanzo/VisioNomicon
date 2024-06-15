@@ -31,7 +31,7 @@ def image_to_name(image_path: str, args) -> str:
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {API_KEY}"}
 
     payload = {
-        "model": "gpt-4-turbo",
+        "model": "gpt-4o",
         "messages": [
             {
                 "role": "user",

@@ -1,13 +1,16 @@
 from openai import OpenAI
 from pathlib import Path
-import os, requests, base64, sys
+import os
+import requests
+import base64
+import sys
 
 API_KEY = ""
 
 
 def set_api_key():
     global API_KEY
-    not "OPENAI_API_KEY" in os.environ and sys.exit(
+    "OPENAI_API_KEY" not in os.environ and sys.exit(
         "Open AI API key not set. Set it using the OPENAI_API_KEY environment variable"
     )
     API_KEY = os.environ.get("OPENAI_API_KEY") if API_KEY == "" else API_KEY

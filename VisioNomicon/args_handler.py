@@ -1,29 +1,89 @@
-import argparse, os, sys
+import argparse
+import os
 
 NO_VAL = object()
 
+
 def parse_cli_args():
-    parser = argparse.ArgumentParser(description='A utility leveraging GPT-4V for image file renaming based on content.')
-    parser.add_argument('-f', '--files', type=str, nargs='*', help='Specify file paths of the images to create mapping for')
-    parser.add_argument('-o', '--output', type=str, nargs='?', help='Provide file path for the JSON mapping file')
-    parser.add_argument('-x', '--execute', type=str, nargs='?', help='Execute on given mapping', const=NO_VAL)
-    parser.add_argument('-ox', '--mapex', type=str, nargs='?', help='Map and execute on mapping at given location', const=NO_VAL)
-    parser.add_argument('-u', '--undo', type=str, nargs='?', help='Undo given mapping', const=NO_VAL)
-    parser.add_argument('-t', '--template', type=str, nargs='?', help='Define the template for renaming image files, without file extension', default='[SubjectDescription]_[MainColor/ColorScheme]_[StyleOrFeel]_[CompositionElement]')
-    parser.add_argument('-e', '--validation-retries', type=int, help='Number of times to retry if validation not passed', default=3)
-    parser.add_argument('-v', '--error-retries', type=int, help='Number of times to retry if error response recieved from OpenAI', default=3)
-    parser.add_argument('-E', '--ignore-validation-fail', action='store_true', help='If validation retries limit is reached, map file to original name instead of returning an error')
-    parser.add_argument('-V', '--ignore-error-fail', action='store_true', help='If error retries limit is reached, map file to original name instead of returning an error')
+    parser = argparse.ArgumentParser(
+        description="A utility leveraging GPT-4V for image file renaming based on content."
+    )
+    parser.add_argument(
+        "-f",
+        "--files",
+        type=str,
+        nargs="*",
+        help="Specify file paths of the images to create mapping for",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=str,
+        nargs="?",
+        help="Provide file path for the JSON mapping file",
+    )
+    parser.add_argument(
+        "-x",
+        "--execute",
+        type=str,
+        nargs="?",
+        help="Execute on given mapping",
+        const=NO_VAL,
+    )
+    parser.add_argument(
+        "-ox",
+        "--mapex",
+        type=str,
+        nargs="?",
+        help="Map and execute on mapping at given location",
+        const=NO_VAL,
+    )
+    parser.add_argument(
+        "-u", "--undo", type=str, nargs="?", help="Undo given mapping", const=NO_VAL
+    )
+    parser.add_argument(
+        "-t",
+        "--template",
+        type=str,
+        nargs="?",
+        help="Define the template for renaming image files, without file extension",
+        default="[SubjectDescription]_[MainColor/ColorScheme]_[StyleOrFeel]_[CompositionElement]",
+    )
+    parser.add_argument(
+        "-e",
+        "--validation-retries",
+        type=int,
+        help="Number of times to retry if validation not passed",
+        default=3,
+    )
+    parser.add_argument(
+        "-v",
+        "--error-retries",
+        type=int,
+        help="Number of times to retry if error response recieved from OpenAI",
+        default=3,
+    )
+    parser.add_argument(
+        "-E",
+        "--ignore-validation-fail",
+        action="store_true",
+        help="If validation retries limit is reached, map file to original name instead of returning an error",
+    )
+    parser.add_argument(
+        "-V",
+        "--ignore-error-fail",
+        action="store_true",
+        help="If error retries limit is reached, map file to original name instead of returning an error",
+    )
 
     # if flag with value, equals value
     # if flag with no value, equals const value
     # if flag not used, equals None
 
-
     # capture initial defaults before parsing
     # this is for the below 'hack'
     defaults = {action.dest: action.default for action in parser._actions}
-    
+
     args = parser.parse_args()
     args_dict = vars(args)
 
@@ -34,37 +94,39 @@ def parse_cli_args():
     if args.undo is not None:
         # Check if any other arg changed from default
         non_default_args = [arg for arg in args_dict if args_dict[arg] != defaults[arg]]
-    
+
         # Remove checked key since we don't need to check it against itself
-        non_default_args.remove('undo')
-    
+        non_default_args.remove("undo")
+
         # If any other arguments changed, error
         if non_default_args:
-            parser.error('-u/--undo must not be used with any other arguments.')
+            parser.error("-u/--undo must not be used with any other arguments.")
     ####################################################################################
 
     if args.files is not None and len(args.files) == 0:
         parser.error("-f/--files requires a value")
 
     if args.output is not None and args.execute is not None:
-        parser.error("instead of using -o/--output along with -x/--execute, use -ox/--mapex")
-        
+        parser.error(
+            "instead of using -o/--output along with -x/--execute, use -ox/--mapex"
+        )
+
     if args.mapex is not None:
         if args.output is not None or args.execute is not None:
-            parser.error("-ox/--mapex should be used without -o/--output or -x/--execute")
+            parser.error(
+                "-ox/--mapex should be used without -o/--output or -x/--execute"
+            )
 
         args.output = args.mapex
         args.execute = args.mapex
 
-        
     if args.output is not None and args.files is None:
-        parser.error('-o/--output must be used with -f/--files')
+        parser.error("-o/--output must be used with -f/--files")
 
     if args.template is None:
-        parser.error('used -t/--template with no value')
+        parser.error("used -t/--template with no value")
 
-    supported_ext = ['.png', '.jpeg', '.jpg', '.webp', '.gif']
-
+    supported_ext = [".png", ".jpeg", ".jpg", ".webp", ".gif"]
 
     #
     # get absolute paths where we need them
@@ -83,7 +145,7 @@ def parse_cli_args():
         for image_path in clean_paths:
             _, image_ext = os.path.splitext(image_path)
             if image_ext not in supported_ext:
-                parser.error('Filetype {} not supported'.format(image_ext))
+                parser.error("Filetype {} not supported".format(image_ext))
         args.files = clean_paths
 
     if args.output is not None and args.output != NO_VAL:
@@ -94,5 +156,5 @@ def parse_cli_args():
 
     if args.undo is not None and args.undo != NO_VAL:
         args.undo = os.path.abspath(args.undo)
-    
+
     return args

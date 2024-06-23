@@ -1,11 +1,14 @@
-from openai import OpenAI
+import openai
+import json
+import io
 from pathlib import Path
 import os
 import requests
 import base64
 import sys
+from constants import API_KEY, NAMING_PROMPT, MODEL
 
-API_KEY = ""
+RETRIEVED_JSON = {}
 
 
 def set_api_key():
@@ -14,6 +17,98 @@ def set_api_key():
         "Open AI API key not set. Set it using the OPENAI_API_KEY environment variable"
     )
     API_KEY = os.environ.get("OPENAI_API_KEY") if API_KEY == "" else API_KEY
+
+
+def batch(filepaths: list[str], base64_strs: list[str], template: str, data_dir: str):
+    batch_reqs = []
+    for filepath, base64_str in zip(filepaths, base64_strs):
+        batch_reqs.append(
+            {
+                "custom_id": filepath,
+                "method": "POST",
+                "url": "/v1/chat/completions",
+                "body": {
+                    "model": MODEL,
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": NAMING_PROMPT.format(template=template),
+                                },
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": base64_str,
+                                        "detail": "auto",
+                                    },
+                                },
+                            ],
+                        }
+                    ],
+                    "temperature": 0.7,
+                },
+            }
+        )
+
+    set_api_key()
+    bytes_buffer = io.BytesIO()
+    # write to bytes buffer
+    # doing this to avoid having to write file to disk then pull back from disk to send
+    for entry in batch_reqs:
+        json_line = json.dumps(entry) + "\n"
+        bytes_buffer.write(json_line.encode("utf-8"))
+
+    # reset buffer position to prepare to send
+    bytes_buffer.seek(0)
+
+    file_upload_response = openai.files.create(file=bytes_buffer, purpose="batch")
+
+    # create batch request from uploaded requests file
+    # only 24h completion window is available for now
+    batch = openai.batches.create(
+        input_file_id=file_upload_response.id,
+        endpoint="/v1/chat/completions",
+        completion_window="24h",
+    )
+    # write batch id to file to retrieve later
+    with open(f"{data_dir}/batch_id", "w") as file:
+        file.write(batch.id)
+
+
+def image_to_name_retrieve(image_path: str) -> str:
+    global RETRIEVED_JSON
+
+    if not RETRIEVED_JSON:
+        # get file_id for completed responses
+        file_id = ""
+        # get batch id from file
+        data_dir = os.environ.get("XDG_DATA_HOME")
+        data_dir = (
+            data_dir if data_dir else os.path.abspath("~/.local/share")
+        ) + "/visionomicon/"
+        with open(f"{data_dir}/batch_id", "r") as f:
+            file_id = openai.batches.retrieve(f.read()).output_file_id
+
+        # could occur if batch not complete yet
+        if file_id is None:
+            print("Error during batch retrieval, maybe the job isn't complete yet.")
+            sys.exit()
+
+        try:
+            # get responses in a json str
+            response_str = openai.files.content(file_id).content.decode("utf-8")
+        # output file for responses may be expired or deleted
+        except openai.NotFoundError:
+            print("Error during batch retrieval, output file could not be retrieved.")
+            sys.exit()
+        # each response in own json
+        response_jsons = [json.loads(s) for s in response_str.split("\n") if s.strip()]
+        RETRIEVED_JSON = {s["custom_id"]: s for s in response_jsons}
+    return RETRIEVED_JSON[image_path]["response"]["body"]["choices"][0]["message"][
+        "content"
+    ].strip()
 
 
 def image_to_name(image_path: str, args) -> str:
@@ -34,14 +129,14 @@ def image_to_name(image_path: str, args) -> str:
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {API_KEY}"}
 
     payload = {
-        "model": "gpt-4o",
+        "model": MODEL,
         "messages": [
             {
                 "role": "user",
                 "content": [
                     {
                         "type": "text",
-                        "text": f"Generate a filename for an image by analyzing its content and utilizing a user-provided template. Placeholders enclosed in square brackets (e.g., [Subject], [Color], [Action]) will be used, which represent specific elements to be incorporated in the filename. Replace the placeholders accurately and succinctly with terms pulled from the image content, removing the brackets in the final filename. For instance, if the template reads '[MainSubject]_in_[Setting]', the filename might be 'Cat_in_Garden'. Construct the filename omitting the file extension and any other text. Assure that every placeholder is filled with precise, image-derived information, conforming to typical filename length restrictions. The given template is '{template}'.",
+                        "text": NAMING_PROMPT.format(template=template),
                     },
                     {
                         "type": "image_url",
@@ -64,7 +159,7 @@ def image_to_name(image_path: str, args) -> str:
 
         try:
             return response_json["choices"][0]["message"]["content"]
-        except:
+        except KeyError:
             print("OpenAI Unexpected Response:", response_json["error"]["message"])
             i < args.error_retries and print("retrying...\n")
 
@@ -79,10 +174,9 @@ def image_to_name(image_path: str, args) -> str:
 
 def name_validation(name: str, template: str):
     set_api_key()
-    client = OpenAI()
 
-    completion = client.chat.completions.create(
-        model="gpt-4-1106-preview",
+    completion = openai.chat.completions.create(
+        model=MODEL,
         messages=[
             {
                 "role": "system",

@@ -1,30 +1,34 @@
 import os
+import sys
+import base64
 import json
 import copy
 import glob
-from VisioNomicon.args_handler import *
-from VisioNomicon.gpt import *
+from constants import get_data_dir
+from args_handler import parse_cli_args, NO_VAL
+from gpt import (
+    image_to_name,
+    name_validation,
+    image_to_name_retrieve,
+    batch,
+)
 from datetime import datetime
-
-DATA_DIR = ""
 
 
 def main():
-    # get data dir
-    global DATA_DIR
-    DATA_DIR = (
-        os.environ.get("XDG_DATA_HOME")
-        if "XDG_DATA_HOME" in os.environ
-        else os.path.abspath("~/.local/share")
-    ) + "/visionomicon/"
-
     # make data dir if doesn't exist
-    not os.path.exists(DATA_DIR) and os.makedirs(DATA_DIR)
+    data_dir = get_data_dir()
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
 
     args = parse_cli_args()
+    if args.create_batch:
+        create_batch(args)
+        print("Batch job created.")
+        return 0
 
     # if creating mapping
-    if args.files is not None:
+    if args.files:
         new_filepaths: list[str] = generate_mapping(args)
 
         # have new and old, put them together into a json and save
@@ -33,7 +37,7 @@ def main():
     # if executing or undoing
     if args.undo or args.execute:
         rel_mapping_fp = args.execute if args.execute else args.undo
-        rename_from_mapping(rel_mapping_fp, args.undo is not None)
+        rename_from_mapping(rel_mapping_fp, args.undo)
 
 
 def rename_from_mapping(rel_mapping_fp: str, undo: bool = False):
@@ -61,7 +65,7 @@ def get_mapping_name(cli_fp: str):
         return cli_fp
     else:
         # Join the directory with the file pattern
-        file_pattern = os.path.join(DATA_DIR, "*.json")
+        file_pattern = os.path.join(get_data_dir(), "*.json")
 
         # Get list of files matching the file pattern
         files = glob.glob(file_pattern)
@@ -84,9 +88,21 @@ def save_mapping(args, new_filepaths: list[str]):
 def generate_mapping_name(args) -> str:
     return (
         args.output
-        if args.output != NO_VAL
-        else DATA_DIR + datetime.now().strftime("mapping-%Y-%m-%d-%H-%M-%S.json")
+        if args.output and args.output != NO_VAL
+        else get_data_dir() + datetime.now().strftime("mapping-%Y-%m-%d-%H-%M-%S.json")
     )
+
+
+def create_batch(args):
+    base64_strs = []
+    for fp in args.files:
+        _, image_ext = os.path.splitext(fp)
+        with open(fp, "rb") as image_file:
+            base64_strs.append(
+                f"data:image/{image_ext};base64,{base64.b64encode(image_file.read()).decode("utf-8")}"
+            )
+
+    batch(args.files, base64_strs, args.template, get_data_dir())
 
 
 def generate_mapping(args) -> list[str]:
@@ -97,11 +113,19 @@ def generate_mapping(args) -> list[str]:
         slicepoint = new_filepaths[i].rindex("/") + 1
         new_filepaths[i] = new_filepaths[i][:slicepoint]
 
+    new_fp = ""
+    new_filename = ""
+    new_name = ""
+    image_ext = ""
     for i in range(len(og_filepaths)):
         image_path = og_filepaths[i]
         for j in range(args.validation_retries + 1):
             print("Generating name...")
-            new_name = image_to_name(image_path, args)
+            new_name = (
+                image_to_name_retrieve(image_path)
+                if args.retrieve_batch
+                else image_to_name(image_path, args)
+            )
             print("Generated name {}".format(new_name))
 
             _, image_ext = os.path.splitext(image_path)

@@ -75,6 +75,18 @@ def parse_cli_args():
         action="store_true",
         help="If error retries limit is reached, map file to original name instead of returning an error",
     )
+    parser.add_argument(
+        "-b",
+        "--create-batch",
+        action="store_true",
+        help="Create batch job through OpenAI API",
+    )
+    parser.add_argument(
+        "-B",
+        "--retrieve-batch",
+        action="store_true",
+        help="Retrieve batch job output through OpenAI API. Run this 24 hours after creating the batch job.",
+    )
 
     # if flag with value, equals value
     # if flag with no value, equals const value
@@ -103,16 +115,16 @@ def parse_cli_args():
             parser.error("-u/--undo must not be used with any other arguments.")
     ####################################################################################
 
-    if args.files is not None and len(args.files) == 0:
+    if args.files == NO_VAL:
         parser.error("-f/--files requires a value")
 
-    if args.output is not None and args.execute is not None:
+    if args.output and args.execute:
         parser.error(
             "instead of using -o/--output along with -x/--execute, use -ox/--mapex"
         )
 
-    if args.mapex is not None:
-        if args.output is not None or args.execute is not None:
+    if args.mapex:
+        if args.output or args.execute:
             parser.error(
                 "-ox/--mapex should be used without -o/--output or -x/--execute"
             )
@@ -120,10 +132,13 @@ def parse_cli_args():
         args.output = args.mapex
         args.execute = args.mapex
 
-    if args.output is not None and args.files is None:
+    if args.output and not args.files:
         parser.error("-o/--output must be used with -f/--files")
 
-    if args.template is None:
+    if args.create_batch and not args.files:
+        parser.error("-b/--create-batch must be used with -f/--files")
+
+    if args.template == NO_VAL:
         parser.error("used -t/--template with no value")
 
     supported_ext = [".png", ".jpeg", ".jpg", ".webp", ".gif"]
@@ -131,7 +146,7 @@ def parse_cli_args():
     #
     # get absolute paths where we need them
     #
-    if args.files is not None:
+    if args.files:
         args.files = [os.path.abspath(path) for path in args.files]
         clean_paths = args.files.copy()
 
@@ -148,13 +163,13 @@ def parse_cli_args():
                 parser.error("Filetype {} not supported".format(image_ext))
         args.files = clean_paths
 
-    if args.output is not None and args.output != NO_VAL:
+    if args.output and args.output != NO_VAL:
         args.output = os.path.abspath(args.output)
 
-    if args.execute is not None and args.execute != NO_VAL:
+    if args.execute and args.execute != NO_VAL:
         args.execute = os.path.abspath(args.execute)
 
-    if args.undo is not None and args.undo != NO_VAL:
+    if args.undo and args.undo != NO_VAL:
         args.undo = os.path.abspath(args.undo)
 
     return args

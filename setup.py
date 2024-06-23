@@ -2,10 +2,10 @@ from setuptools import setup, find_packages
 
 setup(
     name="VisioNomicon",
-    version="0.1.3",
+    version="0.1.4",
     author="Rehan Rana",
     author_email="visionomicon@rehanzo.com",
-    description="A utility leveraging GPT-4V for image file renaming based on content.",
+    description="A utility leveraging GPT-4o for image file renaming based on content.",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/rehanzo/visionomicon",
@@ -28,5 +28,5 @@ setup(
         "Intended Audience :: Developers",
         "Topic :: Utilities",
     ],
-    keywords="gpt-4 gpt-4v openai renaming images",
+    keywords="gpt-4 gpt-4v gpt-4o openai renaming images",
 )

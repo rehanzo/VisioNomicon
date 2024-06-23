@@ -85,7 +85,7 @@ def parse_cli_args():
         "-B",
         "--retrieve-batch",
         action="store_true",
-        help="Retrieve batch job output through OpenAI API. Run this 24 hours after creating the batch job.",
+        help="Retrieve batch job output through OpenAI API. Run this 24 hours after creating the batch job",
     )
 
     # if flag with value, equals value

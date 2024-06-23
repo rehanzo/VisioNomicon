@@ -1,6 +1,6 @@
 # VisioNomicon
 
-VisioNomicon is a powerful Python-based command-line utility tool designed to rename image files using the capabilities of GPT-4. Descriptive filenames are generated based on a user given template and the content of the image.
+VisioNomicon is a powerful Python-based command-line utility tool designed to rename image files using the capabilities of GPT-4o. Descriptive filenames are generated based on a user given template and the content of the image.
 
 ![demo][DEMO]
 
@@ -11,14 +11,14 @@ VisioNomicon is a powerful Python-based command-line utility tool designed to re
 - Ability to create a mapping file for renamed images
 - Execute renaming based on a generated mapping file
 - Undo renaming to revert to original filenames
-- Verification step for generated names using GPT-4
+- Verification step for generated names using GPT-4o
 - Support for multiple retry attempts in case of validation or errors
 - Supported file types: `.png`, `.jpeg`, `.jpg`, `.webp`, `.gif` (non-animated)
 
 ## Prerequisites
 
 - Python 3.6+
-- Access to OpenAI API with GPT-4V capabilities (API key required)
+- Access to OpenAI API with GPT-4o capabilities (API key required)
 
 ## Installation
 
@@ -30,7 +30,7 @@ pip install VisioNomicon
 
 Alternatively, you can manually install the package by downloading the source distribution and running the following commands:
 
-1. Download the latest source distribution (`VisioNomicon-0.1.1.tar.gz`) from the [Releases](https://github.com/rehanzo/VisioNomicon/releases) page.
+1. Download the latest source distribution from the [Releases](https://github.com/rehanzo/VisioNomicon/releases) page.
 2. Extract the file and navigate to the extracted directory.
 3. Run the following command to install:
 
@@ -70,6 +70,8 @@ OPENAI_API_KEY='your_api_key_here' VisioNomicon [OPTIONS]
 - `-v`, `--error-retries`: Specify the number of retries in case of OpenAI errors (defaults to 3)
 - `-E`, `--ignore-validation-fail`: If validation retries limit is reached, map file to original name instead of returning an error
 - `-V`, `--ignore-error-fail`: If error retries limit is reached, map file to original name instead of returning an error
+- `-b`, `--create-batch`: Create batch job through OpenAI API.
+- `-B`, `--retrieve-batch`: Retrieve batch job output through OpenAI API. Run this 24 hours after creating the batch job.
 
 ### Example Commands
 
@@ -80,7 +82,7 @@ VisioNomicon -f image1.jpg image2.png -ox
 This is the most straightforward usage. A mapping file is created for the images, placed at the default location (`$XDG_DATA_HOME/visionomicon/mapping-%Y-%m-%d-%H-%M-%S.json`). Immediately afterwards, this file is executed, renaming the files.
 
 ```bash
-VisioNomicon -f image1.jpg image2.png -o mapping.json -s "[Object]_[Color]_[Style]"
+VisioNomicon -f image1.jpg image2.png -o mapping.json -t "[Object]_[Color]_[Style]"
 ```
 
 This command will create a rename mapping file for `image1.jpg` and `image2.png` based on the provided template and output the mapping to `mapping.json`.
@@ -94,14 +96,13 @@ VisioNomicon -x mapping.json
 This can also be done in one single command if you'd like, using `-ox`:
 
 ```bash
-VisioNomicon -f image1.jpg image2.png -ox mapping.json -s "[Object]_[Color]_[Style]"
+VisioNomicon -f image1.jpg image2.png -ox mapping.json -t "[Object]_[Color]_[Style]"
 ```
 
 ## Limitations
 
-- GPT-4V is limited in the file types it can handle(.png, .jpeg, .jpg, .webp, non-animated .gif), and the size (up to 20MB)
+- GPT-4o is limited in the file types it can handle(.png, .jpeg, .jpg, .webp, non-animated .gif), and the size (up to 20MB)
 - With some templates it can be quite finicky, not really generating the filenames you might expect
-  - part of this could be due to the fact that GPT-4V is fairly new and will get better with time
 
 ## Contributing
 

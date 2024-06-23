@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="VisioNomicon",
-    version="0.1.5",
+    version="0.1.6",
     author="Rehan Rana",
     author_email="visionomicon@rehanzo.com",
     description="A utility leveraging GPT-4o for image file renaming based on content.",

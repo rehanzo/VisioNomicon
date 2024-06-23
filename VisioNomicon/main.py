@@ -4,9 +4,9 @@ import base64
 import json
 import copy
 import glob
-from constants import get_data_dir
-from args_handler import parse_cli_args, NO_VAL
-from gpt import (
+from .constants import get_data_dir
+from .args_handler import parse_cli_args, NO_VAL
+from .gpt import (
     image_to_name,
     name_validation,
     image_to_name_retrieve,

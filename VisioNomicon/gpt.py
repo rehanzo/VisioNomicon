@@ -6,7 +6,7 @@ import os
 import requests
 import base64
 import sys
-from constants import API_KEY, NAMING_PROMPT, MODEL
+from .constants import API_KEY, NAMING_PROMPT, MODEL
 
 RETRIEVED_JSON = {}
 

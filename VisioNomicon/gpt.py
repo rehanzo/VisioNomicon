@@ -48,7 +48,7 @@ def batch(filepaths: list[str], base64_strs: list[str], template: str, data_dir:
                             ],
                         }
                     ],
-                    "temperature": 0.7,
+                    "temperature": 0.2,
                 },
             }
         )
@@ -179,6 +179,7 @@ def name_validation(name: str, template: str):
 
     completion = openai.chat.completions.create(
         model=MODEL,
+        temperature=0.2,
         messages=[
             {
                 "role": "system",

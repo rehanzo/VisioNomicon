@@ -13,9 +13,10 @@ RETRIEVED_JSON = {}
 
 def set_api_key():
     global API_KEY
-    "OPENAI_API_KEY" not in os.environ and sys.exit(
-        "Open AI API key not set. Set it using the OPENAI_API_KEY environment variable"
-    )
+    if "OPENAI_API_KEY" not in os.environ:
+        sys.exit(
+            "Open AI API key not set. Set it using the OPENAI_API_KEY environment variable"
+        )
     API_KEY = os.environ.get("OPENAI_API_KEY") if API_KEY == "" else API_KEY
 
 
@@ -142,7 +143,7 @@ def image_to_name(image_path: str, args) -> str:
                         "type": "image_url",
                         "image_url": {
                             "url": f"data:image/{image_ext};base64,{base64_image}",
-                            "detail": "low",
+                            "detail": "auto",
                         },
                     },
                 ],
@@ -161,7 +162,8 @@ def image_to_name(image_path: str, args) -> str:
             return response_json["choices"][0]["message"]["content"]
         except KeyError:
             print("OpenAI Unexpected Response:", response_json["error"]["message"])
-            i < args.error_retries and print("retrying...\n")
+            if i < args.error_retries:
+                print("retrying...\n")
 
     if args.ignore_error_fail:
         return Path(image_path).stem

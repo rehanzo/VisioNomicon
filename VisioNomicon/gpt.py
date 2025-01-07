@@ -6,6 +6,8 @@ import os
 import requests
 import base64
 import sys
+
+from .config import get_config
 from .constants import API_KEY, NAMING_PROMPT, MODEL
 
 RETRIEVED_JSON = {}
@@ -25,12 +27,13 @@ def set_api_key():
 def get_openai_client():
     global openai_client
     if not openai_client:
-        openai_client = openai.Client()
+        openai_client = openai.Client(base_url=get_config().get("base_url"))
     return openai_client
 
 
 def batch(filepaths: list[str], base64_strs: list[str], template: str, data_dir: str):
     batch_reqs = []
+
     for filepath, base64_str in zip(filepaths, base64_strs):
         batch_reqs.append(
             {
@@ -38,7 +41,7 @@ def batch(filepaths: list[str], base64_strs: list[str], template: str, data_dir:
                 "method": "POST",
                 "url": "/v1/chat/completions",
                 "body": {
-                    "model": MODEL,
+                    "model": get_config().get("model") or MODEL,
                     "messages": [
                         {
                             "role": "user",
@@ -167,20 +170,42 @@ def image_to_name(image_path: str, args) -> str:
     }
 
     for i in range(args.error_retries + 1):
-        response = requests.post(
-            "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
-        )
-        response_json = response.json()
-
         try:
-            return response_json["choices"][0]["message"]["content"]
-        except KeyError:
-            print("OpenAI Unexpected Response:", response_json["error"]["message"])
+            client = get_openai_client()
+            response = client.chat.completions.create(
+                model=get_config().get("model") or MODEL,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": NAMING_PROMPT.format(template=template),
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/{image_ext};base64,{base64_image}",
+                                    "detail": "auto",
+                                },
+                            },
+                        ],
+                    }
+                ],
+                max_tokens=300,
+            )
+            if not (response_content := response.choices[0].message.content):
+                raise ValueError("Empty output error")
+            return response_content
+
+        except Exception as e:
+            print("OpenAI Error:", str(e))
             if i < args.error_retries:
                 print("retrying...\n")
 
     if args.ignore_error_fail:
         return Path(image_path).stem
+
     sys.exit(
         "\nOpenAI unexpected response {} time(s), quitting.".format(
             args.error_retries + 1
@@ -192,8 +217,9 @@ def name_validation(name: str, template: str):
     set_api_key()
 
     client = get_openai_client()
+
     completion = client.chat.completions.create(
-        model=MODEL,
+        model=get_config().get("model") or MODEL,
         temperature=0.2,
         messages=[
             {

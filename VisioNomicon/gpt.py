@@ -9,6 +9,7 @@ import sys
 from .constants import API_KEY, NAMING_PROMPT, MODEL
 
 RETRIEVED_JSON = {}
+openai_client = None
 
 
 def set_api_key():
@@ -17,7 +18,15 @@ def set_api_key():
         sys.exit(
             "Open AI API key not set. Set it using the OPENAI_API_KEY environment variable"
         )
-    API_KEY = os.environ.get("OPENAI_API_KEY") if API_KEY == "" else API_KEY
+    if not API_KEY:
+        API_KEY = os.environ.get("OPENAI_API_KEY")
+
+
+def get_openai_client():
+    global openai_client
+    if not openai_client:
+        openai_client = openai.Client()
+    return openai_client
 
 
 def batch(filepaths: list[str], base64_strs: list[str], template: str, data_dir: str):
@@ -64,11 +73,15 @@ def batch(filepaths: list[str], base64_strs: list[str], template: str, data_dir:
     # reset buffer position to prepare to send
     bytes_buffer.seek(0)
 
-    file_upload_response = openai.files.create(file=bytes_buffer, purpose="batch")
+    openai_client = get_openai_client()
+
+    file_upload_response = openai_client.files.create(
+        file=bytes_buffer, purpose="batch"
+    )
 
     # create batch request from uploaded requests file
     # only 24h completion window is available for now
-    batch = openai.batches.create(
+    batch = openai_client.batches.create(
         input_file_id=file_upload_response.id,
         endpoint="/v1/chat/completions",
         completion_window="24h",
@@ -81,6 +94,7 @@ def batch(filepaths: list[str], base64_strs: list[str], template: str, data_dir:
 def image_to_name_retrieve(image_path: str) -> str:
     global RETRIEVED_JSON
 
+    openai_client = get_openai_client()
     if not RETRIEVED_JSON:
         # get file_id for completed responses
         file_id = ""
@@ -90,7 +104,7 @@ def image_to_name_retrieve(image_path: str) -> str:
             data_dir if data_dir else os.path.abspath("~/.local/share")
         ) + "/visionomicon/"
         with open(f"{data_dir}/batch_id", "r") as f:
-            file_id = openai.batches.retrieve(f.read()).output_file_id
+            file_id = openai_client.batches.retrieve(f.read()).output_file_id
 
         # could occur if batch not complete yet
         if file_id is None:
@@ -99,7 +113,7 @@ def image_to_name_retrieve(image_path: str) -> str:
 
         try:
             # get responses in a json str
-            response_str = openai.files.content(file_id).content.decode("utf-8")
+            response_str = openai_client.files.content(file_id).content.decode("utf-8")
         # output file for responses may be expired or deleted
         except openai.NotFoundError:
             print("Error during batch retrieval, output file could not be retrieved.")
@@ -177,7 +191,8 @@ def image_to_name(image_path: str, args) -> str:
 def name_validation(name: str, template: str):
     set_api_key()
 
-    completion = openai.chat.completions.create(
+    client = get_openai_client()
+    completion = client.chat.completions.create(
         model=MODEL,
         temperature=0.2,
         messages=[
